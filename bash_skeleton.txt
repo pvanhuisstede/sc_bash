@@ -1,0 +1,99 @@
+0 Introduction
+
+Bash (Bourne Again SHell on *nix) is the *nix shell or command line
+interface (cli). It inherited the Unix philosophy of small programs
+that are dedicated to do one thing, but do it really well and fast. If
+you were to read "The Unix Programming Environment (Brian W. Kernighan
+& Rob Pike)", my edition is from 1984, you will find that almost all
+of the commands run smoothly on a Linux OS in 2022. In the first part
+(I) we will spend some time on running Bash in the *nix environment,
+with its files and directories.
+
+The second part (II) of this workshop will look at ways to chain some
+of these small programs together in order to accomplish intricate
+things: Using so-called pipes.
+
+In the the third part (III) we will address two more advanced topics:
+write small shell programs to automate stuff and use the shell to work
+on a remote computer.
+
+I. Basic Bash commands
+
+Basic Bash commands have a common structure which consists of
+
+command -option(s) [files]
+
+Since Bash provides it users with a rather austere window that puts
+out a $ or "dollar prompt" after which commands can be entered. The
+commands to move through the structured content of the filesystem is
+one of the first things that have to be learned:
+
+pwd - print working dir (where are we?)
+ls - look what is there; options -l, -al, -tl
+cd - change dir
+
+Moving, copying and removing files:
+
+mv [file] [destination]
+cp [file] [destination]
+rm [file]
+rm -r [directory] remove dir recursively: also the underlying dirs and files
+
+Other useful commands:
+
+touch - creates a file
+mkdir - creates a directory
+locate - locates a file
+
+Apart from these often used commands, the Bash shell hosts a multitude
+of small programs that accomplish all sorts of useful tasks. In order to 
+
+II Pipes
+
+II.A 
+
+III.A Small shell programs to automate stuff 
+1. We are going to make a cmdline program out of an R script!
+1  > cp hello.R greeter
+   Copy the previous R file into greeter
+2  > nano greeter 
+   Add shebang, but what is the path to the Rscript executable
+   use CTRL-Z
+3  > which Rscript
+   use fg, and paste the path 
+4. > ls -la 
+   explain about the file permission flags
+5. > chmod a+x greeter
+   run ls -la to see that the x flag was added
+6. > ./greeter
+   explain why the dot is needed
+7. > echo $PATH
+   explain about the PATH env variable
+8. > env
+   explain there are many variables (rstudio adds many) 
+9. > echo $USER
+10. > $USER 
+11. > nano greeter
+    Add name <- Sys.getenv('USER'); greeting <- paste("Hello", name) # note the space removal
+12. > ./greeter Workshop
+    We are going to pass an argument to the script, the output should be Hello Workshop
+13. > nano greeter
+    Add args <- commandArgs() ; name <- args[1]
+14. > ./greeter Workshop
+    Explain the output, this was expected. edit the script so that print(args) is used.
+15. Conclude that this is a mess, explain how this normally works, use commandArgs(trailingOnly=TRUE)
+
+16. optionally write the python version
+
+17. what happens if we call both versions without arguments. 
+    Modify the R version to use Sys.getenv('USER') if no arhument is supplied
+    Modify the python version to use os.environ['USER'] if no argument is supplied
+18. > export CUSTOM_GREETINGS="Welcome everybody!"
+    Explain that we can add variables
+19. > echo $CUSTOM_GREETINGS / env
+
+20. > if 'CUSTOM_GREETINGS' in os.environ / if (Sys.getenv('CUSTOM_GREETINGS') != ""){
+
+III.B Working on a remote computer
+
+
