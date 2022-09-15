@@ -46,13 +46,212 @@ mkdir - creates a directory
 locate - locates a file
 
 Apart from these often used commands, the Bash shell hosts a multitude
-of small programs that accomplish all sorts of useful tasks. In order to 
+of small programs that accomplish all sorts of useful tasks. In order
+to try some of them out, we will start with typing in, with the help
+of Nano, the text of a poem by Augustus De Morgan:
+
+nano poem [opens up the editor with an empty file with the name 'poem']
+
+---
+Great fleas have little fleas
+  upon their backs to bite 'em,
+And little fleas have lesser fleas,
+  and so ad infinitum.
+And the great fleas themselves, in turn,
+  have greater fleas to go on;
+While these again have greater still,
+  and greater still, and so on.
+---
+
+wc poem - counts lines, words, and characters in [file]
+grep fleas poem - return lines that contain the word 'fleas'
+grep -v fleas poem - return lines that NOT contain the word 'fleas'
+
+grep can do a lot more. Run the command: man grep
+
+There we read that the option -c (--count). The output is the number
+of lines matched given the query and the file:
+
+grep -c 'fleas' poem - returns 4
+
+sort poem > poem.sorted (where > redirects the result to a new file)
+
+cat poem.sorted - display the contents of the newly cretated file
+
+cmp poem poem.sorted - indicates the first place where the two files differ (a fast way to check if two files are one and the same.)
+
+diff poem poem.sorted - indicates where the two files are different.
 
 II Pipes
 
-II.A 
+Useful as these small programs are, it is the possibility to combine them in so-called pipes (using the so-called 'pipe' character: '|') combined with the redirection operator we already have seen: '>' that gives them power.
 
-III.A Small shell programs to automate stuff 
+II.1 A quick analysis of the contents of 'Jane Eyre' by Charlotte Bronte.
+
+What are the most used words and the hapaxes (words used just once) in the text?
+
+Let's download the complete text of the book from Project Gutenberg:
+
+wget https://gutenberg.org/files/1260/1260-0.txt
+
+We can run through the whole file, and we see that the text of the
+book has additional metadata attached. We will remove it using our
+preferred editor.
+
+$ cat 1260-0.txt
+
+Then we run the edited file again through `cat`, but this time we pipe
+the result through the `tr` command which runs adjacent non-letters
+into a newline, so we end with all words on a separate line.
+
+$ cat 1260-0.txt |
+> tr -sc A-Za-z '\012'
+
+We can't help noticing that we have the same word with uppercase and
+lowercase first letters. Let's change that, again using `tr`
+
+$ cat 1260-0.txt |
+> tr -sc A-Za-z '\012' |
+> tr '[:upper:]' '[:lower:]'
+
+Ok, so far so good, we now have "lord" and 'jesus" instead of "Lord"
+"Jesus".
+
+To get similar things together, `sort` is our best friend:
+
+$ cat 1260-0.txt |
+> tr -sc A-Za-z '\012' |
+> tr '[:upper:]' '[:lower:]' |
+> sort
+
+Now we can use `uniq` with the option -c (count unique words) to do
+the counting:
+
+$ cat 1260-0.txt |
+> tr -sc A-Za-z '\012' |
+> tr '[:upper:]' '[:lower:]' |
+> sort |
+> uniq -c
+
+Great stuff. The word 'your' was used 2996 times! Let's regroup by sorting again, but now with the option -nr (numerical reversed):
+
+$ cat 1260-0.txt |
+> tr -sc A-Za-z '\012' |
+> tr '[:upper:]' '[:lower:]' |
+> sort |
+> uniq -c |
+> sort -nr
+
+Almost there. At the end of the file we have all so-called hapaxes,
+words that are used once in the text, whereas at the front we have the
+most used words. Let's display the 25 most used words:
+
+$ cat 1260-0.txt |
+> tr -sc A-Za-z '\012' |
+> tr '[:upper:]' '[:lower:]' |
+> sort |
+> uniq -c |
+> sort -nr |
+> head -25
+
+The most used words are not really that informative, apart from the
+fact that they illustrate Zipf's Law. But they are the glue for words
+that carry more meaning. Usually we refer to these words as stopwords
+and in order to provide us with most used words that match the hapaxes
+we want to get rid of them.
+
+Let's work with a file, stopwords, that contains the words, one per
+line, that we do NOT want in our list. We could of course look at our
+result computed above and type in the words. But!
+
+Try to write out, in plain text, the discrete steps you need to take
+to generate such a list from the text itself (hint: You probably can
+re-use some of commands we used earlier).
+
+[-> generate_stopwords.txt]
+
+With the help of our generated file 'stopwords', we can use grep to
+filter out the stopwords from our results.
+
+> grep -v -Fx -f stopwords
+
+will do the trick, where:
+* -v keep the non-matching lines (aka: drop the stopwords)
+* -F treat patterns as strings not regex's
+* -x ONLY except full line matches
+* -f read patterns from file
+
+So, our pipeline becomes:
+
+$ cat 1260-0.txt |
+> tr -sc A-Za-z '\012' |
+> tr '[:upper:]' '[:lower:]' |
+> sort |
+> grep -v -Fx -f stopwords |
+> uniq -c |
+> sort -nr |
+> head -25
+
+Mhh, we might want to expand our list of stopwords, but that depends
+on our questions. But, wait, we are not the first to be in need of a
+list of English stopwords. NLTK library for Python contains a list of
+English stopwords in the file 'english'. Let's run our pipeline again
+with that file instead of out stopwords.
+
+$ cat 1260-0.txt |
+> tr -sc A-Za-z '\012' |
+> tr '[:upper:]' '[:lower:]' |
+> sort |
+> grep -v -Fx -f english |
+> uniq -c |
+> sort -nr |
+> head -25
+
+II.2 So what do the French think of their ecological problems?
+
+Use the shell to get an idea of what is in a large CSV file > 300Mb.
+
+Our file is called: LA_TRANSITION_ECOLOGIQUE.csv
+
+cat [file] only gives you a Matrix like feeling with a 300Mb scrolling in your terminal
+batcat [aka: bat] -A gives a better view on what we have here.
+
+and with 
+
+The structure is a something like ...
+
+A popular tool for having a somewhat structured view on the contents
+of a CSV file is 'csvlook', but it only works with smaller files. If
+we run it on our CSV file we get the following error:
+FieldSizeLimitError: CSV contains a field longer than the maximum
+length of 131072 characters on line 128739.
+
+If the first line is the so-called CSV header, let's take that and try
+to get all its parts on a line of their own:
+
+$ head -1 shell-lesson-data/LA_TRANSITION_ECOLOGIQUE.csv |
+> tr '","' '\n'
+
+We see an interesting format: some general metadata and then 16
+columns each holding the answers to as many questions, each question
+has its own ID. Question 16 reads: ...
+
+Let's suppose that we want to get the answers to this open question
+into a file in order to have a closer look at it. How should we
+proceed?
+
+The last column, the one with the open question, is #27, so try to cut
+that one out with:
+
+$ cat shell-lesson-data/LA_TRANSITION_ECOLOGIQUE.csv |
+> cut -d '","' -f27 > q16.txt
+
+With this file, we can use our previous NLP pipeline to flesh out the
+important topics of this "discourse".
+
+
+III.1 Small shell programs to automate stuff
+
 1. We are going to make a cmdline program out of an R script!
 1  > cp hello.R greeter
    Copy the previous R file into greeter
@@ -94,6 +293,6 @@ III.A Small shell programs to automate stuff
 
 20. > if 'CUSTOM_GREETINGS' in os.environ / if (Sys.getenv('CUSTOM_GREETINGS') != ""){
 
-III.B Working on a remote computer
+III.2 Working on a remote computer (often with large files)
 
-
+1. De-deplication of Orcid json file using screen.
