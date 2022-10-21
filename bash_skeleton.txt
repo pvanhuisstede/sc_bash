@@ -69,7 +69,7 @@ grep -v fleas poem - return lines that NOT contain the word 'fleas'
 
 grep can do a lot more. Run the command: man grep
 
-There we read that the option -c (--count). The output is the number
+wget https://gutenThere we read that the option -c (--count). The output is the number
 of lines matched given the query and the file:
 
 grep -c 'fleas' poem - returns 4
@@ -295,4 +295,4 @@ III.1 Small shell programs to automate stuff
 
 III.2 Working on a remote computer (often with large files)
 
-1. De-deplication of Orcid json file using screen.
+1. De-deplication of Orcid json file using screen; files in the Google Cloud.

@@ -1,0 +1,8 @@
+% cat 1260-0.txt |
+tr -sc A-Za-z '\012' |
+tr '[:upper:]' '[:lower:]' |
+sort |
+uniq -c |
+sort -nr |
+head -65 |
+cut -c 9- > stopwords
